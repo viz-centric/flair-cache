@@ -9,9 +9,9 @@
         <relativePath/>
     </parent>
     <groupId>com.flair.caching</groupId>
-    <artifactId>flair-caching</artifactId>
+    <artifactId>flair-cache</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>flair-caching</name>
+    <name>flair-cache</name>
     <description>Flair caching</description>
 
     <properties>
@@ -23,10 +23,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -43,6 +39,10 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         <dependency>
             <groupId>org.rocksdb</groupId>
