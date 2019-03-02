@@ -23,5 +23,6 @@ HELP.md
 /nbproject/private/
 /nbbuild/
 /dist/
+/cache/
 /nbdist/
 /.nb-gradle/
