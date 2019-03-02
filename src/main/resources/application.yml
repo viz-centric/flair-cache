@@ -1,1 +1,17 @@
+eureka:
+  instance.health-check-url-path: /health
+  instance.status-page-url-path: /info
+  client:
+    enabled: true
+    healthcheck.enabled: true
 
+management:
+  endpoint.prometheus.enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - prometheus
+      base-path: "/"
