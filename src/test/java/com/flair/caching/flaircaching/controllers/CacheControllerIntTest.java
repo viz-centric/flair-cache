@@ -42,6 +42,19 @@ public class CacheControllerIntTest {
     }
 
     @Test
+    public void getResultInvalidRequest() {
+        this.webClient.post()
+                .uri("/cache/result")
+                .body(Mono.just(ImmutableMap.of("key", "somekey" + Math.random(),
+                        "table", "")), Map.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("$.errors[0].defaultMessage").isEqualTo("error.cache.get.table.null");
+    }
+
+    @Test
     public void putResult() {
         this.webClient.put()
                 .uri("/cache/result")
@@ -64,6 +77,20 @@ public class CacheControllerIntTest {
                 .expectBody()
                 .jsonPath("$.cache.result").isEqualTo("some value")
                 .jsonPath("$.cache.dateCreated").isNotEmpty();
+    }
+
+    @Test
+    public void putResultInvalidRequest() {
+        this.webClient.put()
+                .uri("/cache/result")
+                .body(Mono.just(ImmutableMap.of("key", "somekey",
+                        "table", "",
+                        "value", "some value")), Map.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("$.errors[0].defaultMessage").isEqualTo("error.cache.put.table.null");
     }
 
     @Test

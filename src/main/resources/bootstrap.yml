@@ -5,3 +5,5 @@ eureka:
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://admin:admin@devsupport-vizcentric.com:8762/eureka/}
+server:
+  port: 12355
