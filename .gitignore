@@ -25,4 +25,5 @@ HELP.md
 /dist/
 /cache/
 /nbdist/
+/target/
 /.nb-gradle/
