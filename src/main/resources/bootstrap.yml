@@ -1,7 +1,11 @@
 spring:
   application:
     name: flair-cache
+grpc:
+  port: 6566
 eureka:
+  instance:
+    nonSecurePort: ${grpc.port}
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://admin:admin@devsupport-vizcentric.com:8762/eureka/}

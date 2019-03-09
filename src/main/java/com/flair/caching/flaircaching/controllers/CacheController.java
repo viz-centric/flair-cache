@@ -36,7 +36,7 @@ public class CacheController {
     }
 
     @PutMapping("/result")
-    public ResponseEntity<CacheResultResponse> putResult(@Valid @RequestBody CacheController.PutCacheRequest request) {
+    public ResponseEntity<?> putResult(@Valid @RequestBody CacheController.PutCacheRequest request) {
         cacheService.putResult(request.getTable(), request.getKey(), request.getValue());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

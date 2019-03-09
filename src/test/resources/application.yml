@@ -1,0 +1,3 @@
+grpc:
+  enabled: false
+  inProcessServerName: myTestServer
