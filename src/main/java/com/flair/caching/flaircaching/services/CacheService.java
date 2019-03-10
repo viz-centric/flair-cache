@@ -1,5 +1,6 @@
 package com.flair.caching.flaircaching.services;
 
+import com.flair.caching.flaircaching.dto.CacheEntry;
 import com.flair.caching.flaircaching.repositories.CacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +15,9 @@ public class CacheService {
 
     private final CacheRepository cacheRepository;
 
-    public Optional<String> getResult(String table, String key) {
+    public Optional<CacheEntry> getResult(String table, String key) {
         log.info("Get table {} key {}", table, key);
-        Optional<String> value = cacheRepository.getResult(table, key);
+        Optional<CacheEntry> value = cacheRepository.getResult(table, key);
         if (value.isPresent()) {
             log.info("Get value table {} key {} value {}", table, key, value.get());
         } else {
@@ -25,9 +26,15 @@ public class CacheService {
         return value;
     }
 
-    public void putResult(String table, String key, String value) {
-        log.info("Put value table {} key {} value {}", table, key, value);
-        cacheRepository.putResult(table, key, value);
+    public void putResult(String table, String key, String value,
+                          Long refreshAfterDate, Long purgeAfterDate, Integer refreshAfterCount) {
+        log.info("Put value table {} key {} value {} refreshAfterDate {} purgeAfterDate {} refreshAfterCount {}",
+                table, key, value, refreshAfterDate, purgeAfterDate, refreshAfterCount);
+
+        cacheRepository.putResult(table, key, value,
+                refreshAfterDate,
+                purgeAfterDate,
+                refreshAfterCount);
     }
 
 }

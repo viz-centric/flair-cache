@@ -1,3 +1,6 @@
+spring:
+  profiles:
+    active: test
+
 grpc:
   enabled: false
-  inProcessServerName: myTestServer

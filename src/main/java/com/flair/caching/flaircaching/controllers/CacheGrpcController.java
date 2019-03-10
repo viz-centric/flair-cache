@@ -6,6 +6,7 @@ import com.flair.bi.messages.GetCacheRequest;
 import com.flair.bi.messages.GetCacheResponse;
 import com.flair.bi.messages.PutCacheRequest;
 import com.flair.bi.messages.PutCacheResponse;
+import com.flair.caching.flaircaching.dto.CacheEntry;
 import com.flair.caching.flaircaching.services.CacheService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -14,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.lognet.springboot.grpc.GRpcService;
 
-import java.time.Instant;
 import java.util.Optional;
 
 @GRpcService
@@ -40,19 +40,18 @@ public class CacheGrpcController extends CacheServiceGrpc.CacheServiceImplBase {
             return;
         }
 
-        Optional<String> cacheResult = cacheService.getResult(request.getTable(), request.getKey());
+        Optional<CacheEntry> cacheResult = cacheService.getResult(request.getTable(), request.getKey());
 
-        cacheResult.ifPresent(rawCache -> {
+        if (cacheResult.isPresent()) {
+            CacheEntry cacheMetadata = cacheResult.get();
             responseObserver.onNext(GetCacheResponse.newBuilder()
-                    .setResult(rawCache)
+                    .setResult(cacheMetadata.getResult())
                     .setMetadata(CacheMetadata.newBuilder()
-                            .setDateCreated(Instant.now().toEpochMilli())
+                            .setDateCreated(cacheMetadata.getDateCreated().getEpochSecond())
                             .build())
                     .build());
             responseObserver.onCompleted();
-        });
-
-        if (!cacheResult.isPresent()) {
+        } else {
             responseObserver.onError(Status.NOT_FOUND
                     .withDescription("errors.cache.not_found")
                     .asRuntimeException());
@@ -75,7 +74,8 @@ public class CacheGrpcController extends CacheServiceGrpc.CacheServiceImplBase {
             return;
         }
 
-        cacheService.putResult(request.getTable(), request.getKey(), request.getValue());
+        cacheService.putResult(request.getTable(), request.getKey(), request.getValue(),
+                request.getRefreshAfterDate(), request.getPurgeAfterDate(), request.getRefreshAfterCount());
 
         responseObserver.onNext(PutCacheResponse.newBuilder().build());
         responseObserver.onCompleted();
