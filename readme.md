@@ -1,4 +1,7 @@
-# Getting Started
+[![Build Status](https://dev.azure.com/VizCentric/Flair%20BI/_apis/build/status/viz-centric.flair-cache?branchName=master)](https://dev.azure.com/VizCentric/Flair%20BI/_build/latest?definitionId=9&branchName=master)
+# Flair cache
+
+## Getting Started
 
 ### Guides
 The following guides illustrates how to use certain features concretely:
@@ -11,4 +14,3 @@ The following guides illustrates how to use certain features concretely:
 * [Accessing Relational Data using JDBC with Spring](https://spring.io/guides/gs/relational-data-access/)
 * [Managing Transactions](https://spring.io/guides/gs/managing-transactions/)
 * [Validating Form Input](https://spring.io/guides/gs/validating-form-input/)
-
