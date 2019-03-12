@@ -6,7 +6,7 @@ import com.flair.bi.messages.GetCacheRequest;
 import com.flair.bi.messages.GetCacheResponse;
 import com.flair.bi.messages.PutCacheRequest;
 import com.flair.bi.messages.PutCacheResponse;
-import com.flair.caching.flaircaching.dto.CacheEntry;
+import com.flair.caching.flaircaching.dto.CacheEntryWrapper;
 import com.flair.caching.flaircaching.services.CacheService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -40,14 +40,15 @@ public class CacheGrpcController extends CacheServiceGrpc.CacheServiceImplBase {
             return;
         }
 
-        Optional<CacheEntry> cacheResult = cacheService.getResult(request.getTable(), request.getKey());
+        Optional<CacheEntryWrapper> cacheResult = cacheService.getResult(request.getTable(), request.getKey());
 
         if (cacheResult.isPresent()) {
-            CacheEntry cacheMetadata = cacheResult.get();
+            CacheEntryWrapper cacheMetadata = cacheResult.get();
             responseObserver.onNext(GetCacheResponse.newBuilder()
-                    .setResult(cacheMetadata.getResult())
+                    .setResult(cacheMetadata.getCacheEntry().getResult())
                     .setMetadata(CacheMetadata.newBuilder()
-                            .setDateCreated(cacheMetadata.getDateCreated().getEpochSecond())
+                            .setDateCreated(cacheMetadata.getCacheEntry().getDateCreated())
+                            .setStale(cacheMetadata.isStale())
                             .build())
                     .build());
             responseObserver.onCompleted();

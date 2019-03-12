@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -27,11 +28,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@DirtiesContext
 public class CacheGrpcControllerIntTest {
 
     private static final long CURRENT_TIMESTAMP = 1552241431;
@@ -71,7 +72,7 @@ public class CacheGrpcControllerIntTest {
     }
 
     @Test
-    public void getCacheNotFound() throws Exception {
+    public void getCacheNotFound() {
         boolean exceptionHandled = false;
         try {
             blockingStub.getCache(GetCacheRequest.newBuilder()
@@ -196,6 +197,133 @@ public class CacheGrpcControllerIntTest {
 
         assertEquals("value", cache.getResult());
         assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertFalse(cache.getMetadata().getStale());
+    }
+
+    @Test
+    public void getResultStaleBecauseOfDate() {
+        String key = "key" + Math.random() + System.currentTimeMillis();
+
+        blockingStub.putCache(PutCacheRequest.newBuilder()
+                .setTable("table")
+                .setValue("value")
+                .setKey(key)
+                .setRefreshAfterDate(CURRENT_TIMESTAMP - 1)
+                .setRefreshAfterCount(1)
+                .setPurgeAfterDate(CURRENT_TIMESTAMP + 60)
+                .build());
+
+        GetCacheResponse cache = blockingStub.getCache(GetCacheRequest.newBuilder()
+                .setTable("table")
+                .setKey(key)
+                .build());
+
+        assertEquals("value", cache.getResult());
+        assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertTrue(cache.getMetadata().getStale());
+    }
+
+    @Test
+    public void getResultNotStaleBecauseOfDateIfNoDateProvided() {
+        String key = "key" + Math.random() + System.currentTimeMillis();
+
+        blockingStub.putCache(PutCacheRequest.newBuilder()
+                .setTable("table")
+                .setValue("value")
+                .setKey(key)
+                .setRefreshAfterCount(2)
+                .setPurgeAfterDate(CURRENT_TIMESTAMP + 60)
+                .build());
+
+        GetCacheResponse cache = blockingStub.getCache(GetCacheRequest.newBuilder()
+                .setTable("table")
+                .setKey(key)
+                .build());
+
+        assertEquals("value", cache.getResult());
+        assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertFalse(cache.getMetadata().getStale());
+    }
+
+    @Test
+    public void getResultStaleBecauseOfCount() {
+        String key = "key" + Math.random() + System.currentTimeMillis();
+
+        PutCacheRequest putRequest = PutCacheRequest.newBuilder()
+                .setTable("table")
+                .setValue("value")
+                .setKey(key)
+                .setRefreshAfterDate(CURRENT_TIMESTAMP + 60)
+                .setRefreshAfterCount(2)
+                .setPurgeAfterDate(CURRENT_TIMESTAMP + 60)
+                .build();
+        blockingStub.putCache(putRequest);
+
+        GetCacheRequest getRequest = GetCacheRequest.newBuilder()
+                .setTable("table")
+                .setKey(key)
+                .build();
+        blockingStub.getCache(getRequest);
+        blockingStub.getCache(getRequest);
+        GetCacheResponse cache = blockingStub.getCache(getRequest);
+
+        assertEquals("value", cache.getResult());
+        assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertTrue(cache.getMetadata().getStale());
+    }
+
+    @Test
+    public void getResultDoesNotReturnStaleBecauseOfCountIfWriteWasInBetween() {
+        String key = "key" + Math.random() + System.currentTimeMillis();
+
+        PutCacheRequest putRequest = PutCacheRequest.newBuilder()
+                .setTable("table")
+                .setValue("value")
+                .setKey(key)
+                .setRefreshAfterDate(CURRENT_TIMESTAMP + 60)
+                .setRefreshAfterCount(2)
+                .setPurgeAfterDate(CURRENT_TIMESTAMP + 60)
+                .build();
+        blockingStub.putCache(putRequest);
+
+        GetCacheRequest getRequest = GetCacheRequest.newBuilder()
+                .setTable("table")
+                .setKey(key)
+                .build();
+        blockingStub.getCache(getRequest);
+        blockingStub.putCache(putRequest);
+        blockingStub.getCache(getRequest);
+        GetCacheResponse cache = blockingStub.getCache(getRequest);
+
+        assertEquals("value", cache.getResult());
+        assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertFalse(cache.getMetadata().getStale());
+    }
+
+    @Test
+    public void getResultDoesNotReturnStaleBecauseOfCountIfNoCountProvided() {
+        String key = "key" + Math.random() + System.currentTimeMillis();
+
+        PutCacheRequest putRequest = PutCacheRequest.newBuilder()
+                .setTable("table")
+                .setValue("value")
+                .setKey(key)
+                .setRefreshAfterDate(CURRENT_TIMESTAMP + 60)
+                .setPurgeAfterDate(CURRENT_TIMESTAMP + 60)
+                .build();
+        blockingStub.putCache(putRequest);
+
+        GetCacheRequest getRequest = GetCacheRequest.newBuilder()
+                .setTable("table")
+                .setKey(key)
+                .build();
+        blockingStub.getCache(getRequest);
+        blockingStub.getCache(getRequest);
+        GetCacheResponse cache = blockingStub.getCache(getRequest);
+
+        assertEquals("value", cache.getResult());
+        assertEquals(CURRENT_TIMESTAMP, cache.getMetadata().getDateCreated());
+        assertFalse(cache.getMetadata().getStale());
     }
 
     @Test
