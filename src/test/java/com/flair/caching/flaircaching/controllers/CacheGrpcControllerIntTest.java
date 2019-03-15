@@ -4,46 +4,33 @@ import com.flair.bi.messages.CacheServiceGrpc;
 import com.flair.bi.messages.GetCacheRequest;
 import com.flair.bi.messages.GetCacheResponse;
 import com.flair.bi.messages.PutCacheRequest;
+import com.flair.caching.flaircaching.AbstractIntTest;
 import com.flair.caching.flaircaching.services.CacheService;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.testing.GrpcCleanupRule;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.File;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@DirtiesContext
-public class CacheGrpcControllerIntTest {
+public class CacheGrpcControllerIntTest extends AbstractIntTest {
 
     private static final long CURRENT_TIMESTAMP = 1552241431;
 
-    @Rule
-    public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
+    private CacheServiceGrpc.CacheServiceBlockingStub blockingStub;
 
     @Autowired
     private CacheService cacheService;
-
-    private CacheServiceGrpc.CacheServiceBlockingStub blockingStub;
 
     @TestConfiguration
     static class TestClockConfig {
@@ -56,8 +43,6 @@ public class CacheGrpcControllerIntTest {
 
     @Before
     public void setUp() throws Exception {
-        FileUtils.deleteDirectory(new File("cache"));
-
         String serverName = InProcessServerBuilder.generateName();
 
         grpcCleanup.register(InProcessServerBuilder

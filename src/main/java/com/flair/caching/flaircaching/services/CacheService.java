@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,4 +103,16 @@ public class CacheService {
                 cacheCountEntry);
     }
 
+    public void purge() {
+        log.info("Purging");
+        long epochSecond = Instant.now(clock).getEpochSecond();
+        List<CacheEntry> entries = cacheRepository.list();
+
+        List<CacheEntry> filtered = entries.stream()
+                .filter(it -> it.getPurgeAfterDate() != 0)
+                .filter(it -> it.getPurgeAfterDate() < epochSecond)
+                .collect(Collectors.toList());
+
+        cacheRepository.delete(filtered);
+    }
 }

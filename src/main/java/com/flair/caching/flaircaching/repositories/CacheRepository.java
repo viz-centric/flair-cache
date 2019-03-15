@@ -4,6 +4,7 @@ import com.flair.caching.flaircaching.dto.CacheCountEntry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.SerializationUtils;
+import org.rocksdb.ColumnFamilyDescriptor;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompactionPriority;
@@ -22,19 +23,31 @@ import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
 public class CacheRepository {
 
+    public static final String COL_ENTRIES = "entries";
+    public static final String COL_COUNTS = "counts";
+
     static {
         RocksDB.loadLibrary();
     }
 
     private RocksDB rocksDB;
+    private final Map<String, ColumnFamilyHandle> columnFamilies = new ConcurrentHashMap<>();
+    private final List<ColumnFamilyHandle> cfHandlesList = new CopyOnWriteArrayList<>();
+    private ColumnFamilyOptions cfOptions;
+    private DBOptions dbOptions;
 
 //    cf_options.level_compaction_dynamic_level_bytes = true;
 //    options.max_background_compactions = 4;
@@ -48,8 +61,20 @@ public class CacheRepository {
     @PostConstruct
     public void init() throws RocksDBException {
         log.info("Initializing rocksdb repo");
+
+        cfOptions = createCfOptions();
+        dbOptions = getDbOptions();
+
         try {
-            this.rocksDB = RocksDB.open(getOptions(), "cache");
+            final List<ColumnFamilyDescriptor> cfDescriptors = Arrays.asList(
+                    new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, cfOptions),
+                    new ColumnFamilyDescriptor(COL_ENTRIES.getBytes(), cfOptions),
+                    new ColumnFamilyDescriptor(COL_COUNTS.getBytes(), cfOptions)
+            );
+
+            this.rocksDB = RocksDB.open(dbOptions, "cache", cfDescriptors, cfHandlesList);
+            this.columnFamilies.put(COL_ENTRIES, cfHandlesList.get(1));
+            this.columnFamilies.put(COL_COUNTS, cfHandlesList.get(2));
         } catch (RocksDBException e) {
             log.error("Error opening rocks db", e);
             throw e;
@@ -63,19 +88,28 @@ public class CacheRepository {
             this.rocksDB.flush(new FlushOptions());
         } catch (RocksDBException e) {
             log.warn("Failed to flush db before cleanup", e);
-        } finally {
-            this.rocksDB.close();
         }
+        this.cfHandlesList.forEach(it -> it.close());
+        this.cfHandlesList.clear();
+        this.columnFamilies.clear();
+        this.dbOptions.close();
+        this.rocksDB.close();
+        this.cfOptions.close();
     }
 
     public CacheEntryResult getResult(String table, String key) {
         try {
-            byte[] cacheEntryKey = getCacheEntryKey(table, key);
-            byte[] cacheCountEntryKey = getCacheCountEntryKey(table, key);
+            String cacheEntryKey = getCacheEntryKey(table, key);
+            String cacheCountEntryKey = getCacheCountEntryKey(table, key);
 
-            Map<byte[], byte[]> cacheValues = this.rocksDB.multiGet(Arrays.asList(cacheEntryKey, cacheCountEntryKey));
-            byte[] cacheEntryValue = cacheValues.get(cacheEntryKey);
-            byte[] cacheCountEntryValue = cacheValues.get(cacheCountEntryKey);
+            byte[] cacheEntryKeyBytes = cacheEntryKey.getBytes();
+            byte[] countEntryKeyBytes = cacheCountEntryKey.getBytes();
+            Map<byte[], byte[]> cacheValues = this.rocksDB.multiGet(
+                    Arrays.asList(this.columnFamilies.get(COL_ENTRIES), this.columnFamilies.get(COL_COUNTS)),
+                    Arrays.asList(cacheEntryKeyBytes, countEntryKeyBytes)
+            );
+            byte[] cacheEntryValue = cacheValues.get(cacheEntryKeyBytes);
+            byte[] cacheCountEntryValue = cacheValues.get(countEntryKeyBytes);
 
             return new CacheEntryResult()
                     .setCacheEntry(Optional.ofNullable(cacheEntryValue)
@@ -122,21 +156,21 @@ public class CacheRepository {
                           Long dateCreated,
                           CacheCountEntry cacheCountEntry) {
         try (WriteBatch writeBatch = new WriteBatch()) {
-            byte[] cacheKey = getCacheEntryKey(table, key);
+            String cacheKey = getCacheEntryKey(table, key);
 
             CacheEntry cacheEntry = new CacheEntry()
                     .setResult(value)
-                    .setKey(key)
+                    .setKey(cacheKey)
                     .setDateCreated(dateCreated)
                     .setPurgeAfterDate(purgeAfterDate)
                     .setRefreshAfterDate(refreshAfterDate)
                     .setRefreshAfterCount(refreshAfterCount);
 
-            writeBatch.put(cacheKey, SerializationUtils.serialize(cacheEntry));
+            writeBatch.put(this.columnFamilies.get(COL_ENTRIES), cacheKey.getBytes(), SerializationUtils.serialize(cacheEntry));
 
             if (cacheCountEntry != null) {
-                byte[] countEntryKey = getCacheCountEntryKey(table, key);
-                writeBatch.put(countEntryKey, SerializationUtils.serialize(cacheCountEntry));
+                String countEntryKey = getCacheCountEntryKey(table, key);
+                writeBatch.put(this.columnFamilies.get(COL_COUNTS), countEntryKey.getBytes(), SerializationUtils.serialize(cacheCountEntry));
             }
 
             this.rocksDB.write(new WriteOptions(), writeBatch);
@@ -145,41 +179,79 @@ public class CacheRepository {
         }
     }
 
-    private byte[] getCacheEntryKey(String table, String key) {
-        return ("_cache." + table + "." + key).getBytes();
+    private String getCacheEntryKey(String table, String key) {
+        return (table + "." + key);
     }
 
-    private byte[] getCacheCountEntryKey(String table, String key) {
-        return ("_count." + table + "." + key).getBytes();
+    private String getCacheCountEntryKey(String table, String key) {
+        return (table + "." + key);
     }
 
-    private Collection<CacheEntry> listKeys(ColumnFamilyHandle columnFamily) {
-        Collection<CacheEntry> keys = new ArrayList<>();
-        RocksIterator itr = this.rocksDB.newIterator(columnFamily);
+    private Collection<String> listKeys() {
+        Collection<String> keys = new ArrayList<>();
+        RocksIterator itr = this.rocksDB.newIterator(this.columnFamilies.get(COL_ENTRIES));
         itr.seekToFirst();
         while (itr.isValid()) {
-            keys.add((CacheEntry) SerializationUtils.deserialize(itr.key()));
+            keys.add(new String(itr.key()));
             itr.next();
         }
+        itr.close();
         return keys;
     }
 
     public void putCount(String key, String table, CacheCountEntry cacheCountEntry) {
-        byte[] cacheCountEntryKey = getCacheCountEntryKey(table, key);
+        String cacheCountEntryKey = getCacheCountEntryKey(table, key);
         try {
-            this.rocksDB.put(cacheCountEntryKey, SerializationUtils.serialize(cacheCountEntry));
+            this.rocksDB.put(this.columnFamilies.get(COL_COUNTS), cacheCountEntryKey.getBytes(), SerializationUtils.serialize(cacheCountEntry));
         } catch (RocksDBException e) {
             throw new RuntimeException("Rocksdb error", e);
         }
     }
 
     public Optional<CacheCountEntry> getCount(String key, String table) {
-        byte[] cacheCountEntryKey = getCacheCountEntryKey(table, key);
+        String cacheCountEntryKey = getCacheCountEntryKey(table, key);
         try {
-            return Optional.ofNullable(this.rocksDB.get(cacheCountEntryKey))
-                    .map(it -> (CacheCountEntry)SerializationUtils.deserialize(it));
+            return Optional.ofNullable(this.rocksDB.get(this.columnFamilies.get(COL_COUNTS), cacheCountEntryKey.getBytes()))
+                    .map(it -> (CacheCountEntry) SerializationUtils.deserialize(it));
         } catch (RocksDBException e) {
             throw new RuntimeException("Rocksdb error", e);
         }
+    }
+
+    public List<CacheEntry> list() {
+        final Collection<String> keys = listKeys();
+        if (keys.size() == 0) {
+            return Collections.emptyList();
+        }
+
+        final List<ColumnFamilyHandle> columnFamilyHandles = Collections.nCopies(keys.size(),
+                this.columnFamilies.get(COL_ENTRIES));
+        final List<byte[]> keyBytes = keys.stream()
+                .map(String::getBytes)
+                .collect(Collectors.toList());
+        final Map<byte[], byte[]> map;
+        try {
+            map = this.rocksDB.multiGet(columnFamilyHandles, keyBytes);
+        } catch (RocksDBException e) {
+            throw new RuntimeException("Rocksdb error", e);
+        }
+        return map.values()
+                .stream()
+                .map(it -> (CacheEntry) SerializationUtils.deserialize(it))
+                .collect(Collectors.toList());
+    }
+
+    public void delete(Collection<CacheEntry> entries) {
+        final ColumnFamilyHandle cfEntry = this.columnFamilies.get(COL_ENTRIES);
+        final ColumnFamilyHandle cfCount = this.columnFamilies.get(COL_COUNTS);
+        entries.forEach(it -> {
+            try {
+                final byte[] keyBytes = it.getKey().getBytes();
+                this.rocksDB.delete(cfEntry, keyBytes);
+                this.rocksDB.delete(cfCount, keyBytes);
+            } catch (RocksDBException e) {
+                throw new RuntimeException("Rocksdb error", e);
+            }
+        });
     }
 }
