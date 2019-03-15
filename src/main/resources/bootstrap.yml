@@ -11,3 +11,11 @@ eureka:
       defaultZone: ${EUREKA_URL:http://admin:admin@devsupport-vizcentric.com:8762/eureka/}
 server:
   port: 12355
+
+---
+spring:
+  profiles: test
+
+eureka:
+  client:
+    enabled: false
