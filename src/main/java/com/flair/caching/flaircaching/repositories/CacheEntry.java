@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class CacheEntry implements Serializable {
     private String result;
-    private String key;
+    private String rocksDbKey;
     private Long dateCreated;
     private Long refreshAfterDate;
     private Long purgeAfterDate;

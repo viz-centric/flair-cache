@@ -160,7 +160,7 @@ public class CacheRepository {
 
             CacheEntry cacheEntry = new CacheEntry()
                     .setResult(value)
-                    .setKey(cacheKey)
+                    .setRocksDbKey(cacheKey)
                     .setDateCreated(dateCreated)
                     .setPurgeAfterDate(purgeAfterDate)
                     .setRefreshAfterDate(refreshAfterDate)
@@ -246,7 +246,7 @@ public class CacheRepository {
         final ColumnFamilyHandle cfCount = this.columnFamilies.get(COL_COUNTS);
         entries.forEach(it -> {
             try {
-                final byte[] keyBytes = it.getKey().getBytes();
+                final byte[] keyBytes = it.getRocksDbKey().getBytes();
                 this.rocksDB.delete(cfEntry, keyBytes);
                 this.rocksDB.delete(cfCount, keyBytes);
             } catch (RocksDBException e) {
