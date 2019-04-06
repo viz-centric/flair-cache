@@ -81,6 +81,7 @@ steps:
   - script: |
       export $(grep -v '^#' ./target/maven-archiver/pom.properties | xargs)
       docker build -t flairbi/$artifactId:v$version ./target
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
     displayName: 'Build Docker image'
 
   - script: |
