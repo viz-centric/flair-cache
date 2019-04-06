@@ -1,14 +1,22 @@
 spring:
   application:
     name: flair-cache
+  cloud:
+    config:
+      uri: ${CONFIG_URI:http://devsupport-vizcentric.com:8762/}
+      username: ${CONFIG_USER:admin}
+      password: ${CONFIG_PASS:admin}
+
 grpc:
   port: 6566
+
 eureka:
   instance:
     nonSecurePort: ${grpc.port}
   client:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://admin:admin@devsupport-vizcentric.com:8762/eureka/}
+
 server:
   port: 12355
 
