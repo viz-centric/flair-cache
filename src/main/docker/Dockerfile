@@ -1,6 +1,11 @@
 FROM openjdk:8
 
-# alpine version of openjdk wont work because GRPC under TLS cannot work on minified version of glibc library
+LABEL maintainer="admin@vizcentric.com"
+LABEL name="Vizcentric"
+
+RUN addgroup -S flairgroup && adduser -S flairuser -G flairgroup
+USER flairuser
+WORKDIR /usr/local/bin/flairuser
 
 ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
     JAVA_OPTS="" \
@@ -9,7 +14,7 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 VOLUME /tmp
 EXPOSE 12355
 
-ADD *.jar /app.jar
+COPY *.jar /app.jar
 
 CMD echo "The application will start in ${JHIPSTER_SLEEP}s..." && \
     sleep ${JHIPSTER_SLEEP} && \
