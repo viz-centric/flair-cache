@@ -1,5 +1,8 @@
 FROM openjdk:8
 
+LABEL maintainer="admin@vizcentric.com"
+LABEL name="Vizcentric"
+
 RUN addgroup -S flairgroup && adduser -S flairuser -G flairgroup
 USER flairuser
 WORKDIR /usr/local/bin/flairuser
