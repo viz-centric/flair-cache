@@ -23,6 +23,9 @@ server:
 ---
 spring:
   profiles: test
+  cloud:
+    config:
+      enabled: false
 
 eureka:
   client:

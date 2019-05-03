@@ -1,9 +1,21 @@
 eureka:
-  instance.health-check-url-path: /health
-  instance.status-page-url-path: /info
+  instance:
+    health-check-url-path: /health
+    status-page-url-path: /info
+    nonSecurePort: ${grpc.port}
+    securePort: ${grpc.port}
+    securePortEnabled: true
   client:
     enabled: true
     healthcheck.enabled: true
+    securePortEnabled: true
+
+grpc:
+  tls:
+    enabled: ${GRPC_SSL_ENABLED:false}
+    certChainFile: ${GRPC_CERT:/app/certChainFile.crt}
+    privateKeyFile: ${GRPC_KEY:/app/privateKeyFile.pem}
+    trustCertCollectionFile: ${GRPC_TRUST_CERT:/app/trustCertCollectionFile.crt}
 
 management:
   endpoint.prometheus.enabled: true
