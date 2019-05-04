@@ -14,6 +14,9 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 VOLUME /tmp
 EXPOSE 12355
 
+COPY ssl/cachecertsgen/server.crt /app/certChainFile.crt
+COPY ssl/cachecertsgen/server.pem /app/privateKeyFile.pem
+COPY ssl/cachecertsgen/ca.crt /app/trustCertCollectionFile.crt
 COPY *.jar /app/app.jar
 
 RUN chown -R flairuser:flairuser /app
