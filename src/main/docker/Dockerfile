@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:12
 
 LABEL maintainer="admin@vizcentric.com"
 LABEL name="Vizcentric"
