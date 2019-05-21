@@ -17,7 +17,6 @@
     <properties>
         <java.version>1.8</java.version>
         <spring-cloud.version>Greenwich.RELEASE</spring-cloud.version>
-        <dockerfile-maven-plugin.version>1.4.3</dockerfile-maven-plugin.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <all-grpc.version>1.20.0</all-grpc.version>
         <docker-maven-plugin.version>0.27.2</docker-maven-plugin.version>
@@ -231,36 +230,6 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>${docker-maven-plugin.version}</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven-resources-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>docker-resources</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>copy-resources</goal>
-                            </goals>
-                            <configuration>
-                                <outputDirectory>target/</outputDirectory>
-                                <resources>
-                                    <resource>
-                                        <directory>src/main/docker/</directory>
-                                        <filtering>false</filtering>
-                                    </resource>
-                                    <resource>
-                                        <directory>src/main/resources</directory>
-                                        <filtering>false</filtering>
-                                        <includes>
-                                            <include>ssl/**</include>
-                                        </includes>
-                                    </resource>
-                                </resources>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -286,12 +255,66 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/classes</outputDirectory>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <delimiters>
+                                <delimiter>#</delimiter>
+                            </delimiters>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.xml</include>
+                                        <include>**/*.yml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources/</directory>
+                                    <filtering>false</filtering>
+                                    <excludes>
+                                        <exclude>**/*.xml</exclude>
+                                        <exclude>**/*.yml</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>docker-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>target/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/docker/</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>ssl/**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
