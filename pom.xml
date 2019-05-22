@@ -342,7 +342,6 @@
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <releaseProfiles>prod</releaseProfiles>
                 </configuration>
             </plugin>
             <plugin>
