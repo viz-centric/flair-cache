@@ -51,7 +51,7 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       goals: 'package'
-    condition: ne(variables['Build.SourceBranch'], 'refs/heads/dockerbranch')
+    condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
     displayName: 'Build'
 
   - script: |
@@ -62,5 +62,5 @@ steps:
     env:
       GIT_USERNAME: $(GIT_USERNAME)
       GIT_PASSWORD: $(GIT_PASSWORD)
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dockerbranch')
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
     displayName: 'Release'
