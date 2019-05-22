@@ -58,7 +58,7 @@ steps:
       git checkout master
       git config user.name "Release Bot"
       git config user.email "admin@vizcentric.com"
-      mvn -B release:clean release:prepare release:perform -Dusername=${GIT_USERNAME} -Dpassword=${GIT_PASSWORD} -Dmaven.javadoc.skip=true "-DscmCommentPrefix=[skip ci] "
+      mvn -B release:clean release:prepare release:perform -Dusername=${GIT_USERNAME} -Dpassword=${GIT_PASSWORD} -Darguments="-Dmaven.javadoc.skip=true" "-DscmCommentPrefix=[skip ci] "
     env:
       GIT_USERNAME: $(GIT_USERNAME)
       GIT_PASSWORD: $(GIT_PASSWORD)
