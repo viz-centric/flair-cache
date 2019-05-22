@@ -55,7 +55,7 @@ steps:
     displayName: 'Build'
 
   - script: |
-      git checkout dockerbranch
+      git checkout master
       git config user.name "Release Bot"
       git config user.email "admin@vizcentric.com"
       mvn -B release:clean release:prepare release:perform -Dusername=${GIT_USERNAME} -Dpassword=${GIT_PASSWORD} -Darguments="-Dmaven.javadoc.skip=true" "-DscmCommentPrefix=[skip ci] "
