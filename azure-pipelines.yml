@@ -51,16 +51,16 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       goals: 'package'
-    condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+    condition: ne(variables['Build.SourceBranch'], 'refs/heads/dockerbranch')
     displayName: 'Build'
 
   - script: |
-      git checkout master
+      git checkout dockerbranch
       git config user.name "Release Bot"
       git config user.email "admin@vizcentric.com"
       mvn -B release:clean release:prepare release:perform -Dusername=${GIT_USERNAME} -Dpassword=${GIT_PASSWORD} -Darguments="-Dmaven.javadoc.skip=true" "-DscmCommentPrefix=[skip ci] "
     env:
       GIT_USERNAME: $(GIT_USERNAME)
       GIT_PASSWORD: $(GIT_PASSWORD)
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/dockerbranch')
     displayName: 'Release'
