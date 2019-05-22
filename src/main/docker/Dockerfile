@@ -17,7 +17,7 @@ EXPOSE 12355
 COPY ssl/cachecertsgen/server.crt /app/certChainFile.crt
 COPY ssl/cachecertsgen/server.pem /app/privateKeyFile.pem
 COPY ssl/cachecertsgen/ca.crt /app/trustCertCollectionFile.crt
-COPY *.jar /app/app.jar
+COPY flair-cache-*.jar /app/app.jar
 
 RUN chown -R flairuser:flairuser /app
 RUN chmod -R 755 /app
