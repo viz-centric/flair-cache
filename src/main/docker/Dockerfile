@@ -17,7 +17,7 @@ EXPOSE 12355
 COPY ssl/cachecertsgen/server.crt /app/certChainFile.crt
 COPY ssl/cachecertsgen/server.pem /app/privateKeyFile.pem
 COPY ssl/cachecertsgen/ca.crt /app/trustCertCollectionFile.crt
-COPY flair-cache-*.jar /app/app.jar
+COPY *.war /app/app.war
 
 RUN chown -R flairuser:flairuser /app
 RUN chmod -R 755 /app
@@ -26,5 +26,5 @@ USER flairuser
 
 CMD echo "The application will start in ${JHIPSTER_SLEEP}s..." && \
     sleep ${JHIPSTER_SLEEP} && \
-    java ${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar
+    java ${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /app/app.war
 

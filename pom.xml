@@ -12,6 +12,7 @@
     <version>0.0.26-SNAPSHOT</version>
     <name>flair-cache</name>
     <description>Flair caching</description>
+    <packaging>war</packaging>
 
 
     <properties>
