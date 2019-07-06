@@ -14,6 +14,9 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 VOLUME /tmp
 EXPOSE 12355
 
+ADD https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.0/grpc_health_probe-linux-amd64 /bin/grpc_health_probe
+COPY ssl/cachecertsgen/client.crt /app/client.crt
+COPY ssl/cachecertsgen/client.pem /app/client.pem
 COPY ssl/cachecertsgen/server.crt /app/certChainFile.crt
 COPY ssl/cachecertsgen/server.pem /app/privateKeyFile.pem
 COPY ssl/cachecertsgen/ca.crt /app/trustCertCollectionFile.crt
@@ -21,6 +24,7 @@ COPY *.war /app/app.war
 
 RUN chown -R flairuser:flairuser /app
 RUN chmod -R 755 /app
+RUN chmod +x /bin/grpc_health_probe
 
 USER flairuser
 
