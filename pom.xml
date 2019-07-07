@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.flair.caching</groupId>
     <artifactId>flair-cache</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <name>flair-cache</name>
     <description>Flair caching</description>
     <packaging>war</packaging>
