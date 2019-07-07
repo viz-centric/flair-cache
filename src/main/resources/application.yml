@@ -18,7 +18,9 @@ grpc:
     trustCertCollectionFile: ${GRPC_TRUST_CERT:/app/trustCertCollectionFile.crt}
 
 management:
-  endpoint.prometheus.enabled: true
+  endpoint:
+    prometheus:
+      enabled: true
   endpoints:
     web:
       exposure:

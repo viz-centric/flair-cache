@@ -14,3 +14,14 @@ The following guides illustrates how to use certain features concretely:
 * [Accessing Relational Data using JDBC with Spring](https://spring.io/guides/gs/relational-data-access/)
 * [Managing Transactions](https://spring.io/guides/gs/managing-transactions/)
 * [Validating Form Input](https://spring.io/guides/gs/validating-form-input/)
+
+### Run health check
+
+```bash
+grpc_health_probe -addr localhost:6565 \
+    -tls \
+    -tls-ca-cert=/app/trustCertCollectionFile.crt \
+    -tls-client-cert=/app/client.crt \
+    -tls-client-key=/app/client.pem \
+    -tls-server-name=flair-cache
+```
