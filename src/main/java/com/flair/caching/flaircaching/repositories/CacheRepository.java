@@ -10,7 +10,6 @@ import org.rocksdb.ColumnFamilyOptions;
 import org.rocksdb.CompactionPriority;
 import org.rocksdb.DBOptions;
 import org.rocksdb.FlushOptions;
-import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
@@ -119,7 +118,7 @@ public class CacheRepository {
                             .map(it2 -> (CacheCountEntry) SerializationUtils.deserialize(it2))
                             .orElse(null));
         } catch (RocksDBException e) {
-            throw new RuntimeException("Rocksdb error", e);
+            throw new CacheRuntimeException("Rocksdb error", e);
         }
     }
 
@@ -137,16 +136,6 @@ public class CacheRepository {
                 .setMaxBackgroundCompactions(4)
                 .setMaxBackgroundFlushes(2)
                 .setBytesPerSync(1048576);
-    }
-
-    private Options getOptions() {
-        return new Options()
-                .setCreateIfMissing(true)
-                .setCreateMissingColumnFamilies(true)
-                .setMaxBackgroundCompactions(4)
-                .setMaxBackgroundFlushes(2)
-                .setBytesPerSync(1048576)
-                .setCompactionPriority(CompactionPriority.MinOverlappingRatio);
     }
 
     public void putResult(String table, String key, String value,
@@ -175,7 +164,7 @@ public class CacheRepository {
 
             this.rocksDB.write(new WriteOptions(), writeBatch);
         } catch (RocksDBException e) {
-            throw new RuntimeException("Rocksdb error", e);
+            throw new CacheRuntimeException("Rocksdb error", e);
         }
     }
 
@@ -204,7 +193,7 @@ public class CacheRepository {
         try {
             this.rocksDB.put(this.columnFamilies.get(COL_COUNTS), cacheCountEntryKey.getBytes(), SerializationUtils.serialize(cacheCountEntry));
         } catch (RocksDBException e) {
-            throw new RuntimeException("Rocksdb error", e);
+            throw new CacheRuntimeException("Rocksdb error", e);
         }
     }
 
@@ -214,13 +203,13 @@ public class CacheRepository {
             return Optional.ofNullable(this.rocksDB.get(this.columnFamilies.get(COL_COUNTS), cacheCountEntryKey.getBytes()))
                     .map(it -> (CacheCountEntry) SerializationUtils.deserialize(it));
         } catch (RocksDBException e) {
-            throw new RuntimeException("Rocksdb error", e);
+            throw new CacheRuntimeException("Rocksdb error", e);
         }
     }
 
     public List<CacheEntry> list() {
         final Collection<String> keys = listKeys();
-        if (keys.size() == 0) {
+        if (keys.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -233,7 +222,7 @@ public class CacheRepository {
         try {
             map = this.rocksDB.multiGet(columnFamilyHandles, keyBytes);
         } catch (RocksDBException e) {
-            throw new RuntimeException("Rocksdb error", e);
+            throw new CacheRuntimeException("Rocksdb error", e);
         }
         return map.values()
                 .stream()
@@ -250,7 +239,7 @@ public class CacheRepository {
                 this.rocksDB.delete(cfEntry, keyBytes);
                 this.rocksDB.delete(cfCount, keyBytes);
             } catch (RocksDBException e) {
-                throw new RuntimeException("Rocksdb error", e);
+                throw new CacheRuntimeException("Rocksdb error", e);
             }
         });
     }
