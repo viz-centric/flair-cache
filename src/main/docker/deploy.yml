@@ -1,0 +1,25 @@
+version: '2'
+
+services:
+  flair-cache:
+        image: flairbi/flair-cache:${TAG}
+        hostname: flair-cache
+        container_name: flair-cache
+        labels:
+            purpose: Flair cache
+            environment: development
+        environment:
+            - CONFIG_URI=http://flair-registry:8761
+            - EUREKA_URL=http://admin:admin@flair-registry:8761/eureka
+            - SPRING_PROFILES_ACTIVE=prod
+            - JHIPSTER_SLEEP=120
+            - GRPC_SSL_ENABLED=false
+        ports:
+            - 12355:12355
+        networks:
+        - flair-network
+
+networks:
+    flair-network:
+        external:
+            name: flair-network
