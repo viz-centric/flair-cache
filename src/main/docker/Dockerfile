@@ -13,6 +13,7 @@ ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS \
 
 VOLUME /tmp
 EXPOSE 12355
+EXPOSE 6565
 
 ADD https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.0/grpc_health_probe-linux-amd64 /bin/grpc_health_probe
 COPY ssl/cachecertsgen/client.crt /app/client.crt
