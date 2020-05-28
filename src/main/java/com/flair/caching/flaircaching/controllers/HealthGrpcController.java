@@ -19,13 +19,13 @@ public class HealthGrpcController extends HealthGrpc.HealthImplBase {
 
     @Override
     public void check(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
-        log.info("Health check endpoint called");
+        log.debug("Health check endpoint called");
         performHealthCheck(responseObserver);
     }
 
     @Override
     public void watch(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
-        log.info("Streaming heath endpoint called");
+        log.debug("Streaming heath endpoint called");
         performHealthCheck(responseObserver);
     }
 
