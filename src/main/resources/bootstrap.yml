@@ -8,7 +8,7 @@ spring:
       password: ${CONFIG_PASS:admin}
 
 grpc:
-  port: 6566
+  port: 6565
 
 eureka:
   instance:
