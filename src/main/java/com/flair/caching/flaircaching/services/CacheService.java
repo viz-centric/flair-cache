@@ -34,7 +34,7 @@ public class CacheService {
             return Optional.empty();
         }
 
-        log.info("Get value table {} key {} value {}", table, key, cacheEntryResult);
+        log.debug("Get value table {} key {} value {}", table, key, cacheEntryResult);
 
         CacheEntry cacheEntry = cacheEntryResult.getCacheEntry();
         CacheCountEntry cacheCountEntry = cacheEntryResult.getCacheCountEntry();
@@ -82,8 +82,8 @@ public class CacheService {
 
     public void putResult(String table, String key, String value,
                           Long refreshAfterDate, Long purgeAfterDate, Integer refreshAfterCount) {
-        log.info("Put value table {} key {} value {} refreshAfterDate {} purgeAfterDate {} refreshAfterCount {}",
-                table, key, value, refreshAfterDate, purgeAfterDate, refreshAfterCount);
+        log.info("Put value table {} key {} value.size {} refreshAfterDate {} purgeAfterDate {} refreshAfterCount {}",
+                table, key, (value == null ? 0 : value.length()), refreshAfterDate, purgeAfterDate, refreshAfterCount);
 
         long epochSecond = Instant.now(clock).getEpochSecond();
 
