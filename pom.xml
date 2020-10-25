@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.flair.caching</groupId>
     <artifactId>flair-cache</artifactId>
-    <version>2.6.3-SNAPSHOT</version>
+    <version>2.6.3</version>
     <name>flair-cache</name>
     <description>Flair caching</description>
     <packaging>war</packaging>
@@ -31,7 +31,7 @@
     <scm>
         <connection>scm:git:https://github.com/viz-centric/flair-cache.git</connection>
         <developerConnection>scm:git:https://github.com/viz-centric/flair-cache.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v2.6.3</tag>
         <url>https://github.com/viz-centric/flair-cache.git</url>
     </scm>
 
