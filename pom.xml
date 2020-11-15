@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.flair.caching</groupId>
     <artifactId>flair-cache</artifactId>
-    <version>2.6.4-SNAPSHOT</version>
+    <version>2.6.4</version>
     <name>flair-cache</name>
     <description>Flair caching</description>
     <packaging>war</packaging>
@@ -38,7 +38,8 @@
         <connection>scm:git:${project.scm.url}</connection>
         <url>${project.scm.url}</url>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-    </scm>
+      <tag>v2.6.4</tag>
+  </scm>
 
     <distributionManagement>
         <repository>
