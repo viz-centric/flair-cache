@@ -55,6 +55,26 @@
 
     <repositories>
         <repository>
+            <id>aws-release</id>
+            <url>s3://${bucket.name}/release</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>aws-snapshot</id>
+            <url>s3://${bucket.name}/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>dev-azure-com-vizcentric-flair-cache</id>
             <url>https://pkgs.dev.azure.com/VizCentric/_packaging/flair-cache/maven/v1</url>
             <releases>
